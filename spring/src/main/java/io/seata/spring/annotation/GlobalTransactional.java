@@ -22,8 +22,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import io.seata.common.DefaultValues;
+import io.seata.common.LockStrategyMode;
 import io.seata.tm.api.transaction.Propagation;
 import org.aopalliance.intercept.MethodInvocation;
+import org.springframework.core.annotation.AliasFor;
 
 /**
  * The interface Global transactional.
@@ -33,7 +35,7 @@ import org.aopalliance.intercept.MethodInvocation;
  * .annotation.GlobalTransactionScanner#wrapIfNecessary(Object, String, Object)// the scanner for TM, GlobalLock, and
  * TCC mode
  * @see io.seata.spring.annotation.GlobalTransactionalInterceptor#handleGlobalTransaction(MethodInvocation,
- * GlobalTransactional) io.seata.spring.annotation.GlobalTransactionalInterceptor#handleGlobalTransaction
+ * AspectTransactional) io.seata.spring.annotation.GlobalTransactionalInterceptor#handleGlobalTransaction
  * (MethodInvocation,
  * GlobalTransactional)// TM: the interceptor of TM
  * @see io.seata.spring.annotation.datasource.SeataAutoDataSourceProxyAdvice#invoke(MethodInvocation) io.seata.spring
@@ -99,12 +101,23 @@ public @interface GlobalTransactional {
     Propagation propagation() default Propagation.REQUIRED;
 
     /**
-     * customized global lock retry internal(unit: ms)
+     * customized global lock retry interval(unit: ms)
      * you may use this to override global config of "client.rm.lock.retryInterval"
      * note: 0 or negative number will take no effect(which mean fall back to global config)
      *
      * @return int
      */
+    int lockRetryInterval() default 0;
+
+    /**
+     * customized global lock retry interval(unit: ms)
+     * you may use this to override global config of "client.rm.lock.retryInterval"
+     * note: 0 or negative number will take no effect(which mean fall back to global config)
+     *
+     * @return int
+     */
+    @Deprecated
+    @AliasFor("lockRetryInterval")
     int lockRetryInternal() default 0;
 
     /**
@@ -115,4 +128,12 @@ public @interface GlobalTransactional {
      * @return int
      */
     int lockRetryTimes() default -1;
+
+    /**
+     * pick the Acquire lock policy
+     *
+     * @return lock strategy mode
+     */
+    LockStrategyMode lockStrategyMode() default LockStrategyMode.PESSIMISTIC;
+
 }
